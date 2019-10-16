@@ -11,8 +11,10 @@ BASEPATH = os.path.dirname(os.path.realpath(__file__))
 data_path = os.path.join(BASEPATH, "..", "..", "data")
 
 
+# MOCS: https://cds-astro.github.io/mocpy/examples/examples.html#space-time-coverages
+
 # Get the boundaries of the Sweeps
-file_name = os.path.join(data_path, "raw", "legacysurvey_dr8_north_sweep_8.0.txt")
+file_name = os.path.join(data_path, "raw", "legacysurvey_dr8_south_sweep_8.0.txt")
 with open(file_name, "r") as inp: 
     sweep_lines = inp.readlines()
 
