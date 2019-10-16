@@ -2,3 +2,4 @@ numpy
 astropy
 mocpy
 matplotlib
+python-dotenv
