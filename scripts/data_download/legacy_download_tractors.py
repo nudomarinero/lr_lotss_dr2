@@ -2,6 +2,7 @@ import os
 import urllib.request
 from astropy.table import Table
 from dotenv import load_dotenv, find_dotenv
+import numpy as np
 
 
 try:
@@ -44,25 +45,44 @@ def url_is_alive(url):
 brick_table = Table.read(os.path.join(data_path, 
     "raw", "survey-bricks.fits.gz"))
 
+brick_table_north = Table.read(os.path.join(data_path, 
+    "raw", "survey-bricks-dr8-north.fits.gz"))
+brick_table_south = Table.read(os.path.join(data_path, 
+    "raw", "survey-bricks-dr8-south.fits.gz"))
+
 cond = ((brick_table["DEC"] <= 40) & 
         (brick_table["DEC"] >= 17.5) &
         ((brick_table["RA"] >= 324) | 
          (brick_table["RA"] <= 51))
 )
 
-download_names = brick_table[cond]["BRICKNAME"][:]
+download_names = brick_table[cond]["BRICKNAME"]
 
-with open(os.path.join(BASEPATH, "download_legacy.sh"), 
-          "w") as out:
-    out.write("#!/bin/bash\n")
-    out.write("cd {}\n".format(LEGACY_DATA_PATH))
-    for name in download_names:
-        ra = name[:3]
-        #url_north = template_url_n.format(ra, name)
-        url_south = template_url_s.format(ra, name)
-        #print(name, 
-        #    url_is_alive(url_north), 
-        #    url_is_alive(url_south))
-        out.write("wget {}\n".format(url_south))
+north_bricks = download_names[np.isin(download_names, brick_table_north["brickname"])]
+south_bricks = download_names[np.isin(download_names, brick_table_south["brickname"])]
+
+print(len(north_bricks))
+print(len(south_bricks))
+intersection_bricks = np.intersect1d(north_bricks, south_bricks)
+print(len(intersection_bricks))
+# 465
+# 18152
+# 454
+
+
+
+
+# with open(os.path.join(BASEPATH, "download_legacy.sh"), 
+#           "w") as out:
+#     out.write("#!/bin/bash\n")
+#     out.write("cd {}\n".format(LEGACY_DATA_PATH))
+#     for name in download_names:
+#         ra = name[:3]
+#         #url_north = template_url_n.format(ra, name)
+#         url_south = template_url_s.format(ra, name)
+#         #print(name, 
+#         #    url_is_alive(url_north), 
+#         #    url_is_alive(url_south))
+#         out.write("wget {}\n".format(url_south))
         
 
