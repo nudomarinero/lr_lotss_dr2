@@ -27,7 +27,7 @@ min_dec = np.array([int(s[10:13]) if s[9] == "p" else -int(s[10:13])
 max_dec = np.array([int(s[18:21]) if s[17] == "p" else -int(s[18:21]) 
     for s in sweep_lines])
 
-sweep_mocs = []
+sweep_mocs_south = []
 for i in range(len(sweeps)):
     sweep_vertices = [
         (min_ra[i], min_dec[i]), 
@@ -37,13 +37,43 @@ for i in range(len(sweeps)):
     ]
     vertices = SkyCoord(sweep_vertices, unit="deg", frame="icrs")
     sweep_moc = MOC.from_polygon_skycoord(vertices, max_depth=9)
-    sweep_mocs.append(sweep_moc)
+    sweep_mocs_south.append(sweep_moc)
+
+file_name = os.path.join(data_path, "raw", "legacysurvey_dr8_north_sweep_8.0.txt")
+with open(file_name, "r") as inp: 
+    sweep_lines = inp.readlines()
+
+sweeps = np.array([s[:-1] for s in sweep_lines])
+
+min_ra = np.array([int(s[6:9]) for s in sweep_lines])
+max_ra = np.array([int(s[14:17]) for s in sweep_lines])
+min_dec = np.array([int(s[10:13]) if s[9] == "p" else -int(s[10:13]) 
+    for s in sweep_lines])
+max_dec = np.array([int(s[18:21]) if s[17] == "p" else -int(s[18:21]) 
+    for s in sweep_lines])
+
+sweep_mocs_north = []
+for i in range(len(sweeps)):
+    sweep_vertices = [
+        (min_ra[i], min_dec[i]), 
+        (max_ra[i], min_dec[i]), 
+        (max_ra[i], max_dec[i]), 
+        (min_ra[i], max_dec[i]),
+    ]
+    vertices = SkyCoord(sweep_vertices, unit="deg", frame="icrs")
+    sweep_moc = MOC.from_polygon_skycoord(vertices, max_depth=9)
+    sweep_mocs_north.append(sweep_moc)
 
 # Get the bricks
 brick_table = Table.read(os.path.join(data_path, 
     "raw", "survey-bricks.fits.gz"))
+brick_table_north = Table.read(os.path.join(data_path, 
+    "raw", "survey-bricks-dr8-north.fits.gz"))
+brick_table_south = Table.read(os.path.join(data_path, 
+    "raw", "survey-bricks-dr8-south.fits.gz"))
 
-brick_mocs = []
+brick_mocs_south = []
+brick_mocs_north = []
 cond = ((brick_table["DEC"] <= 40) & 
         (brick_table["DEC"] >= 17.5) &
         ((brick_table["RA"] >= 324) | 
@@ -60,7 +90,10 @@ for row in brick_table[cond]:
         ]
         vertices = SkyCoord(brick_vertices, unit="deg", frame="icrs")
         brick_moc = MOC.from_polygon_skycoord(vertices, max_depth=9)
-        brick_mocs.append(brick_moc)
+        if row["BRICKNAME"] in brick_table_north["brickname"]:
+            brick_mocs_north.append(brick_moc)
+        if row["BRICKNAME"] in brick_table_south["brickname"]:
+            brick_mocs_south.append(brick_moc)
 #    else:
 #        print(row["BRICKID"], row["RA1"], row["RA2"])
 
@@ -87,7 +120,7 @@ area_moc = MOC.from_polygon_skycoord(
     SkyCoord(area_vertices, unit="deg", frame="icrs"),
     max_depth=9)
 
-fig = plt.figure(111, figsize=(10, 10))
+fig = plt.figure(1, figsize=(10, 10))
 # Define a astropy WCS easily
 with WCS(fig, 
         fov=100 * u.deg,
@@ -99,14 +132,40 @@ with WCS(fig,
     ax = fig.add_subplot(1, 1, 1, projection=wcs)
     #sweep_mocs[0].fill(ax=ax, wcs=wcs, alpha=0.5, fill=True, color="red", linewidth=1)
     # Call fill with a matplotlib axe and the `~astropy.wcs.WCS` wcs object.
-    for brick in brick_mocs:
+    for brick in brick_mocs_south:
         #moc.fill(ax=ax, wcs=wcs, alpha=0.5, fill=True, color="red", linewidth=1)
         brick.border(ax=ax, wcs=wcs, alpha=1, color="green")
-    for moc in sweep_mocs:
+    for moc in sweep_mocs_south:
         #moc.fill(ax=ax, wcs=wcs, alpha=0.5, fill=True, color="red", linewidth=1)
         moc.border(ax=ax, wcs=wcs, alpha=1, color="red")
     area_moc.border(ax=ax, wcs=wcs, alpha=1, color="blue")
 
+plt.title('South')
+plt.xlabel('RA')
+plt.ylabel('Dec')
+plt.grid(color="black", linestyle="dotted")
+
+fig2 = plt.figure(2, figsize=(10, 10))
+# Define a astropy WCS easily
+with WCS(fig2, 
+        fov=100 * u.deg,
+        center=SkyCoord(0, 30, unit='deg', frame='icrs'),
+        coordsys="icrs",
+        rotation=Angle(0, u.degree),
+        # The gnomonic projection transforms great circles into straight lines. 
+        projection="AIT") as wcs:
+    ax = fig2.add_subplot(1, 1, 1, projection=wcs)
+    #sweep_mocs[0].fill(ax=ax, wcs=wcs, alpha=0.5, fill=True, color="red", linewidth=1)
+    # Call fill with a matplotlib axe and the `~astropy.wcs.WCS` wcs object.
+    for brick in brick_mocs_north:
+        #moc.fill(ax=ax, wcs=wcs, alpha=0.5, fill=True, color="red", linewidth=1)
+        brick.border(ax=ax, wcs=wcs, alpha=1, color="green")
+    for moc in sweep_mocs_north:
+        #moc.fill(ax=ax, wcs=wcs, alpha=0.5, fill=True, color="red", linewidth=1)
+        moc.border(ax=ax, wcs=wcs, alpha=1, color="red")
+    area_moc.border(ax=ax, wcs=wcs, alpha=1, color="blue")
+
+plt.title('North')
 plt.xlabel('RA')
 plt.ylabel('Dec')
 plt.grid(color="black", linestyle="dotted")
