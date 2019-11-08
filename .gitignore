@@ -52,15 +52,20 @@ Session.vim
 .netrwhist
 *~
 *.kate-swp
+.vscode
 
 # IDE
 .idea/*
 *.iml
 
+# IPython
+*.ipynb_checkpoints
+
 # Data
 data/raw/*
+data/im_cache/legacysurvey*
 
 # Assorted
 notes.txt
 .env
-
+reports/figures/examples*
