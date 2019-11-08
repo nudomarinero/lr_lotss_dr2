@@ -23,6 +23,9 @@ unWISE data
 The band merged data can be found here:
 https://faun.rc.fas.harvard.edu/unwise/release/band-merged/
 
+A list of catalogues can be found in this file:
+https://faun.rc.fas.harvard.edu/unwise/release/band-merged/md5sums
+
 Sample data
 ===========
 There are two sample catalogues in the samples directory: 

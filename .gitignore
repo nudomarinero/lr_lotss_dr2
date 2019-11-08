@@ -64,6 +64,7 @@ Session.vim
 # Data
 data/raw/*
 data/im_cache/legacysurvey*
+data/catalogue_cache/*.fits
 
 # Assorted
 notes.txt
