@@ -1,9 +1,20 @@
-
+import os
 import numpy as np
-
 from astropy.table import Table, Column
 import astropy.units as u
 
+
+try:
+    BASEPATH = os.path.dirname(os.path.realpath(__file__))
+    data_path = os.path.join(BASEPATH, "..", "..", "data")
+except NameError:
+    if os.path.exists("data"):
+        BASEPATH = "."
+        data_path = os.path.join(BASEPATH, "data")
+    else:
+        BASEPATH = os.getcwd()
+        data_path = os.path.join(BASEPATH, "..", "..", "data")
+cache_path = os.path.join(data_path, "catalogue_cache")
 
 """
 Global 5-sigma depths estimated from the peak of the depth distribution:
@@ -145,7 +156,26 @@ def load_unwise(unwise_path, legacy_cat, format='fits'):
 
 
 if __name__ == '__main__':
-
-    # Insert any two random catalogs here for testing:
-    test_sweep = load_legacy('../../data/raw/sweep-030p030-040p035.fits')
-    test_unwise = load_unwise('../../data/raw/1677p227.cat.fits', test_sweep)
+    ## Dowload the unWISE catalogues corresponding to the sweep
+    from glob import glob
+    list_unwise = glob(os.path.join(cache_path, "*.cat.fits"))
+    ## Insert the sample catalogs here for testing:
+    test_sweep = load_legacy(
+        os.path.join(data_path, "samples", "sweep-000p025-010p030.fits"))
+    bands_all = ['G', 'R', 'Z', 'W1', 'W2', 'W3', 'W4']
+    bands_lupt = ['G', 'R', 'Z', 'W1', 'W2']
+    sweep_columns = (
+        ['BRICKNAME', 'OBJID', 'TYPE'] +
+        ['RA', 'DEC', 'RA_IVAR', 'DEC_IVAR'] +
+        ['FLUX_{}'.format(b) for b in bands_all] + 
+        ['FLUXERR_{}'.format(b) for b in bands_all] +
+        ['MAG_{}'.format(b) for b in bands_lupt] + 
+        ['MAGERR_{}'.format(b) for b in bands_lupt] +
+        ['ANYMASK_OPT', 'ANYMASK_G', 'ANYMASK_R', 'ANYMASK_Z']
+        )
+    output_sweep_name = os.path.join(cache_path, "sweep-000p025-010p030_processed.fits")
+    test_sweep[sweep_columns].write(output_sweep_name)
+    # for cat_unwise in list_unwise:
+    #     test_unwise = load_unwise(cat_unwise, test_sweep)
+    #     output_name = os.path.join(cat_unwise[:-9]+".cat_processed.fits")
+    #     test_unwise.write(output_name)
