@@ -2,10 +2,19 @@
 Download the unWISE data corresponding to a given sweep.
 The data is saved in a directory.
 """
+from glob import glob
 import os
 import urllib.request
 from astropy.table import Table
+from dotenv import load_dotenv, find_dotenv
 import numpy as np
+
+
+# Load environment config variables
+# https://saurabh-kumar.com/python-dotenv/
+load_dotenv(find_dotenv())
+LEGACY_DATA_PATH = os.getenv("LEGACY_DATA_PATH")
+UNWISE_DATA_PATH = os.getenv("UNWISE_DATA_PATH")
 
 try:
     BASEPATH = os.path.dirname(os.path.realpath(__file__))
@@ -110,8 +119,18 @@ def download_unwise_from_sweep(sweep, cache_path=None):
         print(r["name"])
         download_unwise(r["name"], cache_path)
 
+def retrieve_unwise_data():
+    """Retrieve all the unWISE data corresponding to the downloaded sweeps
+    in the data area.
+    """
+    sweep_list = glob(os.path.join(LEGACY_DATA_PATH, "sweeps", "*.fits"))
+    for sweep in sweep_list:
+        download_unwise_from_sweep(sweep, 
+            cache_path=os.path.join(UNWISE_DATA_PATH, "band_merged"))
+
 if __name__ == "__main__":
     #test_sweep = os.path.join(data_path, "samples", "sweep-000p025-010p030-reduced.fits")
-    test_sweep = os.path.join(data_path, "samples", "sweep-000p025-010p030.fits")
-    download_unwise_from_sweep(test_sweep, 
-        cache_path=os.path.join(data_path, "catalogue_cache"))
+    #test_sweep = os.path.join(data_path, "samples", "sweep-000p025-010p030.fits")
+    #download_unwise_from_sweep(test_sweep, 
+    #    cache_path=os.path.join(data_path, "catalogue_cache"))
+    retrieve_unwise_data()

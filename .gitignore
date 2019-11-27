@@ -62,7 +62,9 @@ Session.vim
 *.ipynb_checkpoints
 
 # Data
-data/raw/*
+data/raw/*.fits.gz
+data/raw/*.sha256sum
+data/raw/md5sums.txt
 data/im_cache/legacysurvey*
 data/catalogue_cache/*.fits
 
