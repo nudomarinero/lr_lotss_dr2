@@ -29,7 +29,7 @@ sweep_columns = (
     ['BRICKNAME', 'OBJID', 'TYPE'] +
     ['RA', 'DEC', 'RA_IVAR', 'DEC_IVAR'] +
     ['FLUX_{}'.format(b) for b in bands_all] + 
-    ['FLUXERR_{}'.format(b) for b in bands_all] +
+    ['FLUX_IVAR_{}'.format(b) for b in bands_all] +
     ['ANYMASK_G', 'ANYMASK_R', 'ANYMASK_Z']
     )
 
