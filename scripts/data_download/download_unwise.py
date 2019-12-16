@@ -31,6 +31,9 @@ except NameError:
 cache_path = os.path.join(data_path, "catalogue_cache")
 template_unwise_url = "https://faun.rc.fas.harvard.edu/unwise/release/band-merged/{}"
 
+margin_ra = 0.01
+margin_dec = 0.01
+
 
 def sweep_edges(sweep):
     """Get the real edges of the sources in a sweep catalogue.
@@ -109,10 +112,10 @@ def download_unwise_from_sweep(sweep, cache_path=None):
     unwise = load_unwise_catalogues()
     ## Check which unwise catalogues are in the area
     selection = (
-        (unwise["RA"] >= min_ra) &
-        (unwise["RA"] <= max_ra) &
-        (unwise["DEC"] >= min_dec) &
-        (unwise["DEC"] <= max_dec)
+        (unwise["RA"] >= (min_ra - margin_ra)) &
+        (unwise["RA"] <= (max_ra + margin_ra)) &
+        (unwise["DEC"] >= (min_dec - margin_dec)) &
+        (unwise["DEC"] <= (max_dec + margin_dec))
     )
     #print(unwise[selection])
     for r in unwise[selection]:
