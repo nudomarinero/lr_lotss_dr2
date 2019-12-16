@@ -3,7 +3,6 @@ from glob import glob
 import numpy as np
 from astropy.table import Table, vstack
 from dotenv import load_dotenv, find_dotenv
-import astropy.units as u
 
 # Load environment config variables
 # https://saurabh-kumar.com/python-dotenv/
@@ -25,18 +24,21 @@ cache_path = os.path.join(data_path, "catalogue_cache")
 
 
 bands_all = ['G', 'R', 'Z', 'W1', 'W2', 'W3', 'W4']
+bands_lupt = ['G', 'R', 'Z', 'W1', 'W2']
 sweep_columns = (
     ['BRICKNAME', 'OBJID', 'TYPE'] +
     ['RA', 'DEC', 'RA_IVAR', 'DEC_IVAR'] +
     ['FLUX_{}'.format(b) for b in bands_all] + 
     ['FLUX_IVAR_{}'.format(b) for b in bands_all] +
+    ['MW_TRANSMISSION_{}'.format(b) for b in bands_all] +
+    ['PSFDEPTH_{}'.format(b) for b in bands_lupt] +
     ['ANYMASK_G', 'ANYMASK_R', 'ANYMASK_Z']
     )
 
 output_path = os.path.join(LEGACY_DATA_PATH, "combined_sweep")
 sweep_path = os.path.join(LEGACY_DATA_PATH, "sweeps")
 
-list_sweeps = glob(os.path.join(sweep_path, "*.fits"))
+list_sweeps = sorted(glob(os.path.join(sweep_path, "*.fits")))
 
 print("Load", list_sweeps[0])
 t0 = Table.read(list_sweeps[0])[sweep_columns]
@@ -51,4 +53,4 @@ os.makedirs(output_path, exist_ok=True)
 output_name = os.path.join(output_path, "master_sweep.fits")
 
 print("Start output")
-t0.write(output_name)
+t0.write(output_name, overwrite=True)
