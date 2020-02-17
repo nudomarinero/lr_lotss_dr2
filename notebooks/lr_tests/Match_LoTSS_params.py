@@ -134,10 +134,11 @@ describe(lofar_all['Maj'])
 # %% [markdown]
 # ### Filter catalogues
 #
-# We will take the sources in the main region but also discard sources with a Major axis size bigger than 30 arsecs.
+# We will take the sources in the main region but also discard sources with a Major axis size bigger than 15 arsecs.
 
 # %%
-max_major = 30
+#max_major = 30
+max_major = 15
 
 # %%
 lofar_aux = lofar_all[~np.isnan(lofar_all['Maj'])]
@@ -235,6 +236,12 @@ np.round(np.percentile(combined["colour"][~np.isnan(combined["colour"])], list(r
 # %%
 #colour_limits = [0.0, 0.5, 1.0, 1.25, 1.5, 1.75, 2.0, 2.25, 2.5, 2.75, 3.0, 3.5, 4.0]
 colour_limits = np.round(np.percentile(combined["colour"][~np.isnan(combined["colour"])], list(range(10,100,10))), 1)
+
+# %% [markdown]
+# Manually defined colour bins a posteriori
+
+# %%
+colour_limits = np.array([0.7, 1.1, 1.5, 1.9, 2.3, 2.7, 3.1, 3.5, 4.1])
 
 # %%
 # Start with the W2-only, W1-only, and "less than lower colour" bins
