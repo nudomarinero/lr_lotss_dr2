@@ -6,7 +6,7 @@
 #       extension: .py
 #       format_name: percent
 #       format_version: '1.3'
-#       jupytext_version: 1.3.3
+#       jupytext_version: 1.3.0
 #   kernelspec:
 #     display_name: Python 3
 #     language: python
@@ -387,43 +387,56 @@ n_iter = 10
 rads = list(range(1,26))
 
 # %%
-q_0_comp_r = Q_0(coords_lofar, coords_combined[combined_legacy], field)
+Q0_r = 0.6983157523356884
 
 # %%
-q_0_rad_r = []
-q_0_rad_r_std = []
-for radius in rads:
-    q_0_rad_aux = []
-    for i in range(n_iter):
-        try:
-            out = q_0_comp_r(radius=radius)
-        except ZeroDivisionError:
-            continue
-        else:
-            q_0_rad_aux.append(out)
-    q_0_rad_r.append(np.mean(q_0_rad_aux))
-    q_0_rad_r_std.append(np.std(q_0_rad_aux))
-    print(
-        "{:2d} {:7.5f} +/- {:7.5f} [{:7.5f} {:7.5f}]".format(
-            radius,
-            np.mean(q_0_rad_aux),
-            np.std(q_0_rad_aux),
-            np.min(q_0_rad_aux),
-            np.max(q_0_rad_aux),
+if Q0_r is None:
+    q_0_comp_r = Q_0(coords_lofar, coords_combined[combined_legacy], field)
+
+# %%
+if Q0_r is None:
+    q_0_rad_r = []
+    q_0_rad_r_std = []
+    for radius in rads:
+        q_0_rad_aux = []
+        for i in range(n_iter):
+            try:
+                out = q_0_comp_r(radius=radius)
+            except ZeroDivisionError:
+                continue
+            else:
+                q_0_rad_aux.append(out)
+        q_0_rad_r.append(np.mean(q_0_rad_aux))
+        q_0_rad_r_std.append(np.std(q_0_rad_aux))
+        print(
+            "{:2d} {:7.5f} +/- {:7.5f} [{:7.5f} {:7.5f}]".format(
+                radius,
+                np.mean(q_0_rad_aux),
+                np.std(q_0_rad_aux),
+                np.min(q_0_rad_aux),
+                np.max(q_0_rad_aux),
+            )
         )
-    )
+    if save_intermediate:
+        np.savez_compressed(
+            os.path.join(idp, "Q0_r.npz"),
+            q_0_rad_r = q_0_rad_r,
+            q_0_rad_r_std = q_0_rad_r_std
+        )
 
 # %%
-plt.rcParams["figure.figsize"] = (5, 5)
-plt.plot(rads, q_0_rad_r)
-plt.plot(rads, np.array(q_0_rad_r) + 3 * np.array(q_0_rad_r_std), ls=":", color="b")
-plt.plot(rads, np.array(q_0_rad_r) - 3 * np.array(q_0_rad_r_std), ls=":", color="b")
-plt.xlabel("Radius (arcsecs)")
-plt.ylabel("$Q_0 r-band$")
-plt.ylim([0, 1])
+if Q0_r is None:
+    plt.rcParams["figure.figsize"] = (5, 5)
+    plt.plot(rads, q_0_rad_r)
+    plt.plot(rads, np.array(q_0_rad_r) + 3 * np.array(q_0_rad_r_std), ls=":", color="b")
+    plt.plot(rads, np.array(q_0_rad_r) - 3 * np.array(q_0_rad_r_std), ls=":", color="b")
+    plt.xlabel("Radius (arcsecs)")
+    plt.ylabel("$Q_0 r-band$")
+    plt.ylim([0, 1])
 
 # %%
-Q0_r = q_0_rad_r[4]
+if Q0_r is None:
+    Q0_r = q_0_rad_r[4]
 
 # %%
 print(Q0_r)
@@ -485,7 +498,7 @@ bandwidth_w1 = 0.5
 catalogue_w1 = combined[combined_wise]
 
 # %%
-bin_list_w1 = np.linspace(11.5, 29.5, 361) # Bins of 0.05
+bin_list_w1 = np.linspace(11.5, 25.0, 361) # Bins of 0.05
 
 # %%
 center_w1 = get_center(bin_list_w1)
@@ -521,7 +534,7 @@ bandwidth_w2 = 0.5
 catalogue_w2 = combined[combined_wise2]
 
 # %%
-bin_list_w2 = np.linspace(12., 22., 181) # Bins of 0.05
+bin_list_w2 = np.linspace(14., 26., 241) # Bins of 0.1
 
 # %%
 center_w2 = get_center(bin_list_w2)
@@ -583,6 +596,9 @@ print(n_cpus)
 # %%
 radius = 15
 
+# %% [markdown]
+# All the LOFAR sources are combined with the legacy sources (sources with r-band data).
+
 # %%
 idx_lofar, idx_i, d2d, d3d = search_around_sky(
     coords_lofar, coords_combined[combined_legacy], radius*u.arcsec)
@@ -629,15 +645,12 @@ def ml(i):
 
 
 # %%
-from joblib import Parallel, delayed
-from tqdm import tqdm, tqdm_notebook
+#from joblib import Parallel, delayed
+#from tqdm import tqdm, tqdm_notebook
 
 # %%
-res = Parallel(n_jobs=n_cpus)(delayed(ml)(i) for i in tqdm_notebook(idx_lofar_unique))
-
-# %%
-# # Old version using concurrent futures
-# res = parallel_process(idx_lofar_unique, ml, n_jobs=n_cpus)
+#res = Parallel(n_jobs=n_cpus)(delayed(ml)(i) for i in tqdm_notebook(idx_lofar_unique))
+res = parallel_process(idx_lofar_unique, ml, n_jobs=n_cpus)
 
 # %%
 (lofar["lr_index_r"][idx_lofar_unique], 
@@ -654,7 +667,7 @@ lofar["lr_r"][np.isnan(lofar["lr_r"])] = 0
 threshold_r = np.percentile(lofar["lr_r"], 100*(1 - Q0_r))
 
 # %%
-threshold_r #4.8 before
+threshold_r #0.525 before
 
 # %%
 plt.rcParams["figure.figsize"] = (15,6)
@@ -689,7 +702,7 @@ np.savez_compressed(os.path.join(idp, "lr_r.npz"), lr_r=lofar[columns])
 # We will work with the sample that has not been already cross-matched
 
 # %%
-subsample_w1 = (lofar["lr_r"] <= threshold_r)
+subsample_w1 = (lofar["lr_r"] < threshold_r)
 
 # %% [markdown]
 # #### Compute the W1 $Q_0$
@@ -743,11 +756,11 @@ Q0_w1 = q_0_rad_w1[4]
 likelihood_ratio_w1 = SingleMLEstimator(Q0_w1, n_m_w1, q_m_w1, center_w1)
 
 # %%
-idx_lofar, idx_i, d2d, d3d = search_around_sky(
+idx_lofar_w1, idx_i_w1, d2d_w1, d3d_w1 = search_around_sky(
     coords_lofar[subsample_w1], coords_combined[combined_wise], radius*u.arcsec)
 
 # %%
-idx_lofar_unique = np.unique(idx_lofar)
+idx_lofar_unique_w1 = np.unique(idx_lofar_w1)
 
 # %%
 lofar["lr_w1"] = np.nan                   # Likelihood ratio
@@ -757,8 +770,8 @@ lofar["lr_index_w1"] = np.nan             # Index of the PanSTARRS source in com
 
 # %%
 def ml_w1(i):
-    idx_0 = idx_i[idx_lofar == i]
-    d2d_0 = d2d[idx_lofar == i]
+    idx_0 = idx_i_w1[idx_lofar_w1 == i]
+    d2d_0 = d2d_w1[idx_lofar_w1 == i]
     mag = catalogue_w1["MAG_W1"][idx_0]
     
     lofar_ra = lofar[subsample_w1][i]["RA"]
@@ -784,16 +797,16 @@ def ml_w1(i):
 
 
 # %%
-#res = parallel_process(idx_lofar_unique, ml_w1, n_jobs=n_cpus)
-res = Parallel(n_jobs=n_cpus)(delayed(ml_w1)(i) for i in tqdm_notebook(idx_lofar_unique))
+res_w1 = parallel_process(idx_lofar_unique_w1, ml_w1, n_jobs=n_cpus)
+#res = Parallel(n_jobs=n_cpus)(delayed(ml_w1)(i) for i in tqdm_notebook(idx_lofar_unique))
 
 # %%
-indices_w1 = np.arange(len(lofar))[subsample_w1][idx_lofar_unique]
+indices_w1 = np.arange(len(lofar))[subsample_w1][idx_lofar_unique_w1]
 
 # %%
 (lofar["lr_index_w1"][indices_w1], 
  lofar["lr_dist_w1"][indices_w1], 
- lofar["lr_w1"][indices_w1]) = list(map(list, zip(*res)))
+ lofar["lr_w1"][indices_w1]) = list(map(list, zip(*res_w1)))
 
 # %% [markdown]
 # #### Threshold and selection for W1 band
@@ -808,7 +821,7 @@ lofar["lr_w1"][np.isnan(lofar["lr_w1"])] = 0
 threshold_w1 = np.percentile(lofar[subsample_w1]["lr_w1"], 100*(1 - Q0_w1))
 
 # %%
-threshold_w1 # 0.695 before
+threshold_w1 # 0.027 before
 
 # %%
 plt.rcParams["figure.figsize"] = (15,6)
@@ -843,7 +856,7 @@ np.savez_compressed(os.path.join(idp, "lr_w1.npz"), lr_w1=lofar[columns])
 # ### W2-band match
 
 # %%
-subsample_w2 = (lofar["lr_r"] <= threshold_r) & (lofar["lr_w1"] <= threshold_w1)
+subsample_w2 = (lofar["lr_r"] < threshold_r) & (lofar["lr_w1"] < threshold_w1)
 
 # %% [markdown]
 # #### Compute the W2 $Q_0$
@@ -897,11 +910,11 @@ Q0_w2 = q_0_rad_w2[4]
 likelihood_ratio_w2 = SingleMLEstimator(Q0_w2, n_m_w2, q_m_w2, center_w2)
 
 # %%
-idx_lofar, idx_i, d2d, d3d = search_around_sky(
+idx_lofar_w2, idx_i_w2, d2d_w2, d3d_w2 = search_around_sky(
     coords_lofar[subsample_w2], coords_combined[combined_wise2], radius*u.arcsec)
 
 # %%
-idx_lofar_unique = np.unique(idx_lofar)
+idx_lofar_unique_w2 = np.unique(idx_lofar_w2)
 
 # %%
 lofar["lr_w2"] = np.nan                   # Likelihood ratio
@@ -911,8 +924,8 @@ lofar["lr_index_w2"] = np.nan             # Index of the PanSTARRS source in com
 
 # %%
 def ml_w2(i):
-    idx_0 = idx_i[idx_lofar == i]
-    d2d_0 = d2d[idx_lofar == i]
+    idx_0 = idx_i_w2[idx_lofar_w2 == i]
+    d2d_0 = d2d_w2[idx_lofar_w2 == i]
     mag = catalogue_w2["MAG_W2"][idx_0]
     
     lofar_ra = lofar[subsample_w2][i]["RA"]
@@ -938,16 +951,16 @@ def ml_w2(i):
 
 
 # %%
-#res = parallel_process(idx_lofar_unique, ml_w1, n_jobs=n_cpus)
-res = Parallel(n_jobs=n_cpus)(delayed(ml_w2)(i) for i in tqdm_notebook(idx_lofar_unique))
+res_w2 = parallel_process(idx_lofar_unique_w2, ml_w2, n_jobs=n_cpus)
+#res = Parallel(n_jobs=n_cpus)(delayed(ml_w2)(i) for i in tqdm_notebook(idx_lofar_unique))
 
 # %%
-indices_w2 = np.arange(len(lofar))[subsample_w2][idx_lofar_unique]
+indices_w2 = np.arange(len(lofar))[subsample_w2][idx_lofar_unique_w2]
 
 # %%
 (lofar["lr_index_w2"][indices_w2], 
  lofar["lr_dist_w2"][indices_w2], 
- lofar["lr_w2"][indices_w2]) = list(map(list, zip(*res)))
+ lofar["lr_w2"][indices_w2]) = list(map(list, zip(*res_w2)))
 
 # %% [markdown]
 # #### Threshold and selection for W2 band
@@ -959,7 +972,7 @@ lofar["lr_w2"][np.isnan(lofar["lr_w2"])] = 0
 threshold_w2 = np.percentile(lofar[subsample_w2]["lr_w2"], 100*(1 - Q0_w2))
 
 # %%
-threshold_w2 # 0.695 before
+threshold_w2 # 0.015 before
 
 # %%
 plt.rcParams["figure.figsize"] = (15,6)
@@ -1038,6 +1051,16 @@ print(np.sum(lr_w2))
 print(np.sum(lr_no_match))
 
 # %%
+# 0
+# 0
+# 0
+# 0
+# 68853
+# 12390
+# 653
+# 18311
+
+# %%
 lofar["lr_index_1"] = np.nan
 lofar["lr_dist_1"] = np.nan
 lofar["lr_1"] = np.nan
@@ -1090,7 +1113,7 @@ for i, t0 in enumerate(t):
 values, counts = np.unique(lofar[lofar["lr_type_1"] != 0]["lr_index_1"], return_counts=True)
 
 # %%
-len(values[counts > 1])
+len(values[counts > 1]) # 101
 
 # %%
 n_dup, n_sour = np.unique(counts[counts > 1], return_counts=True)
@@ -1126,8 +1149,8 @@ if save_intermediate:
 # First we compute the number of galaxies in each bin for the combined catalogue
 
 # %%
-bin_list = [bin_list_w1 if i == 0 else bin_list_r for i in range(len(colour_bin_def))]
-centers = [center_w1 if i == 0 else center_r for i in range(len(colour_bin_def))]
+bin_list = [bin_list_w2] + [bin_list_w1] + [bin_list_r for i in range(len(colour_bin_def))]
+centers = [center_w2] + [center_w1] + [center_r for i in range(len(colour_bin_def))]
 
 # %%
 numbers_combined_bins = np.array([np.sum(a["condition"]) for a in colour_bin_def])
@@ -1370,7 +1393,8 @@ def ml(i):
 
 
 # %%
-res = Parallel(n_jobs=n_cpus)(delayed(ml)(i) for i in tqdm_notebook(idx_lofar_unique))
+res = parallel_process(idx_lofar_unique, ml, n_jobs=n_cpus)
+#res = Parallel(n_jobs=n_cpus)(delayed(ml)(i) for i in tqdm_notebook(idx_lofar_unique))
 
 # %%
 lofar["lr_index_2"] = np.nan
@@ -1588,8 +1612,8 @@ for j in range(10):
     def ml(i):
         return apply_ml(i, likelihood_ratio)
     ## Run the ML
-    #res = parallel_process(idx_lofar_unique, ml, n_jobs=n_cpus)
-    res = Parallel(n_jobs=n_cpus)(delayed(ml)(i) for i in tqdm_notebook(idx_lofar_unique))
+    res = parallel_process(idx_lofar_unique, ml, n_jobs=n_cpus)
+    #res = Parallel(n_jobs=n_cpus)(delayed(ml)(i) for i in tqdm_notebook(idx_lofar_unique))
     lofar["lr_index_{}".format(iteration)] = np.nan
     lofar["lr_dist_{}".format(iteration)] = np.nan
     lofar["lr_{}".format(iteration)] = np.nan
@@ -1654,7 +1678,7 @@ numbers_lofar_combined_bins = np.array([np.sum(lofar["category"] == c)
                                         for c in range(len(numbers_combined_bins))])
 numbers_lofar_combined_bins
 
-# %% jupyter={"outputs_hidden": true}
+# %%
 if save_intermediate:
     pickle.dump([numbers_lofar_combined_bins, numbers_combined_bins], 
                 open("{}/numbers_{}.pckl".format(idp, iteration), 'wb'))
