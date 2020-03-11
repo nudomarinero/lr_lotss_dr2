@@ -1,8 +1,17 @@
+"""
+Create the coverage MOCs for the Legacy survey.
+
+See:
+* http://www.ivoa.net/documents/MOC/20130910/WD-MOC-1.0-20130910.html
+* https://cds-astro.github.io/mocpy/
+* 
+"""
 import os
 from astropy.table import Table, join
 from astropy.coordinates import SkyCoord, Angle
 import astropy.units as u
 from mocpy import MOC
+from pymoc import MOC as MOC2
 import numpy as np
 from tqdm import tqdm
 
@@ -41,23 +50,41 @@ def moc_from_row(row):
     vertices = SkyCoord(brick_vertices, unit="deg", frame="icrs")
     return MOC.from_polygon_skycoord(vertices, max_depth=10)
 
-print("North:", len(bricks_north))
-brick_moc_north = moc_from_row(bricks_north[0])
-for row in tqdm(bricks_north[1:]):
-    brick_moc = moc_from_row(row)
-    brick_moc_north = brick_moc_north.union(brick_moc)
+if os.path.exists("/run/user/1000/test.fits"):
+    os.remove("/run/user/1000/test.fits")
+
+# print("North:", len(bricks_north))
+# brick_moc_north = MOC2()
+# for row in tqdm(bricks_north):
+#     brick_moc = moc_from_row(row)
+#     brick_moc.write("/run/user/1000/test.fits")
+#     brick_moc_north_aux = MOC2()
+#     brick_moc_north_aux.read("/run/user/1000/test.fits")
+#     brick_moc_north += brick_moc_north_aux
+#     os.remove("/run/user/1000/test.fits")
+
+# brick_moc_north.normalize()
+
+# brick_moc_north.write("moc_north.moc.fits", overwrite=True)
+# brick_moc_north.write("moc_north.moc", filetype="fits", overwrite=True)
+# brick_moc_north.write("moc_north.moc.json", filetype="json")
 
 print("South:", len(bricks_south))
-brick_moc_south = moc_from_row(bricks_south[0])
-for row in tqdm(bricks_south[1:]):
+brick_moc_south = MOC2()
+for row in tqdm(bricks_south):
     brick_moc = moc_from_row(row)
-    brick_moc_south = brick_moc_south.union(brick_moc)
+    try:
+        brick_moc.write("/run/user/1000/test.fits")
+        brick_moc_south_aux = MOC2()
+        brick_moc_south_aux.read("/run/user/1000/test.fits")
+        brick_moc_south += brick_moc_south_aux
+        os.remove("/run/user/1000/test.fits")
+    except ValueError:
+        print("Error saving", row)
+        continue
 
-brick_moc_north.write("moc_north.moc", format="fits")
-brick_moc_south.write("moc_south.moc", format="fits")
+brick_moc_south.normalize()
 
-brick_moc_north.write("moc_north.moc.json", format="json")
-brick_moc_south.write("moc_south.moc.json", format="json")
-
-brick_moc_north.write("moc_north.moc.fits")
-brick_moc_south.write("moc_south.moc.fits")
+brick_moc_south.write("moc_south.moc.fits", overwrite=True)
+brick_moc_south.write("moc_south.moc", filetype="fits", overwrite=True)
+brick_moc_south.write("moc_south.moc.json", filetype="json")
