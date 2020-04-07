@@ -4,7 +4,7 @@ Create the coverage MOCs for the Legacy survey.
 See:
 * http://www.ivoa.net/documents/MOC/20130910/WD-MOC-1.0-20130910.html
 * https://cds-astro.github.io/mocpy/
-* 
+* https://github.com/grahambell/pymoc
 """
 import os
 from astropy.table import Table, join
@@ -65,9 +65,12 @@ if os.path.exists("/run/user/1000/test.fits"):
 
 # brick_moc_north.normalize()
 
-# brick_moc_north.write("moc_north.moc.fits", overwrite=True)
-# brick_moc_north.write("moc_north.moc", filetype="fits", overwrite=True)
-# brick_moc_north.write("moc_north.moc.json", filetype="json")
+# brick_moc_north.write(os.path.join(data_path, 
+#     "mocs", "moc_north.moc.fits"), overwrite=True)
+# brick_moc_north.write(os.path.join(data_path, 
+#     "mocs",  "moc_north.moc"), filetype="fits", overwrite=True)
+# brick_moc_north.write(os.path.join(data_path, 
+#     "mocs",  "moc_north.moc.json"), filetype="json")
 
 print("South:", len(bricks_south))
 brick_moc_south = MOC2()
@@ -85,6 +88,9 @@ for row in tqdm(bricks_south):
 
 brick_moc_south.normalize()
 
-brick_moc_south.write("moc_south.moc.fits", overwrite=True)
-brick_moc_south.write("moc_south.moc", filetype="fits", overwrite=True)
-brick_moc_south.write("moc_south.moc.json", filetype="json")
+brick_moc_south.write(os.path.join(data_path, 
+    "mocs", "moc_south.moc.fits"), overwrite=True)
+brick_moc_south.write(os.path.join(data_path, 
+    "mocs",  "moc_south.moc"), filetype="fits", overwrite=True)
+brick_moc_south.write(os.path.join(data_path, 
+    "mocs",  "moc_south.moc.json"), filetype="json")
