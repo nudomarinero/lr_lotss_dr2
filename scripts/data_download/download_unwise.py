@@ -136,4 +136,6 @@ if __name__ == "__main__":
     #test_sweep = os.path.join(data_path, "samples", "sweep-000p025-010p030.fits")
     #download_unwise_from_sweep(test_sweep, 
     #    cache_path=os.path.join(data_path, "catalogue_cache"))
+    print(LEGACY_DATA_PATH)
+    print(UNWISE_DATA_PATH)
     retrieve_unwise_data()
