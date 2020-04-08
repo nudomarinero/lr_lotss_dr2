@@ -54,7 +54,7 @@ list_unwise = sorted(glob(os.path.join(UNWISE_DATA_PATH, "band_merged", "*.cat.f
 
 for name_unwise in list_unwise:
     print("Processing", name_unwise)
-    cat_unwise = load_unwise(name_unwise, master_sweep)
     output_name = os.path.join(name_unwise[:-9]+".cat_processed.fits")
     if not os.path.exists(output_name):
+        cat_unwise = load_unwise(name_unwise, master_sweep)
         cat_unwise.write(output_name, overwrite=True)
