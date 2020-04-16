@@ -154,5 +154,5 @@ t_all['MAG_W2'][t_all['MAG_W2'] == -99.] = np.nan
 
 ### Save data
 out_columns = ['RA', 'DEC', 'UID_L', 'UNWISE_OBJID', 'MAG_R', 'MAG_W1', 'MAG_W2']
-t_all[out_columns].write(os.path.join(data_path, "samples", "test_combined.fits"), 
+t_all[out_columns].write(os.path.join(LEGACY_DATA_PATH, "combined.fits"), 
     overwrite=True)
