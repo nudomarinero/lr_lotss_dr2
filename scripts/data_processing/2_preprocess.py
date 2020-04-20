@@ -42,12 +42,12 @@ print("Load Legacy catalogue")
 master_sweep = load_legacy(
     os.path.join(LEGACY_DATA_PATH, "combined_sweep", "master_sweep.fits"))
 
-# print("Output processed catalogue")
-# output_sweep_name = os.path.join(
-#     LEGACY_DATA_PATH, 
-#     "combined_sweep", 
-#     "master_sweep_processed.fits")
-# master_sweep[sweep_columns].write(output_sweep_name, overwrite=True)
+print("Output processed catalogue")
+output_sweep_name = os.path.join(
+    LEGACY_DATA_PATH, 
+    "combined_sweep", 
+    "master_sweep_processed.fits")
+master_sweep[sweep_columns].write(output_sweep_name, overwrite=True)
 
 ## Process the individual unWISE data
 list_unwise = sorted(glob(os.path.join(UNWISE_DATA_PATH, "band_merged", "*.cat.fits")))
