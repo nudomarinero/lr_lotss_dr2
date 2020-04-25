@@ -6,7 +6,7 @@
 #       extension: .py
 #       format_name: percent
 #       format_version: '1.3'
-#       jupytext_version: 1.3.0
+#       jupytext_version: 1.3.3
 #   kernelspec:
 #     display_name: Python 3
 #     language: python
@@ -33,22 +33,27 @@ import numpy as np
 from astropy.table import Table
 from astropy import units as u
 from astropy.coordinates import SkyCoord, search_around_sky
+import yaml
+from dotenv import load_dotenv, find_dotenv
 from IPython.display import clear_output
 
 # %%
 try:
     BASEPATH = os.path.dirname(os.path.realpath(__file__))
-    data_path = os.path.join(BASEPATH, "..", "..", "data")
-except NameError:
+    ROOTPATH = os.path.join(BASEPATH, "..", "..")
+except NameError as e:
     if os.path.exists("data"):
-        BASEPATH = "."
-        data_path = os.path.join(BASEPATH, "data")
+        BASEPATH = os.path.realpath(".")
+        ROOTPATH = BASEPATH
     else:
-        BASEPATH = os.getcwd()
-        data_path = os.path.join(BASEPATH, "..", "..", "data")
+        raise e
+
+data_path = os.path.join(ROOTPATH, "data")
+src_path = os.path.join(ROOTPATH, "src")
+config_path = os.path.join(ROOTPATH, "config")
 
 # %%
-sys.path.append(os.path.join(BASEPATH, '..', '..', 'src'))
+sys.path.append(src_path)
 from mltier1 import (get_center, get_n_m, estimate_q_m, Field, SingleMLEstimator, MultiMLEstimator,
                      parallel_process, get_sigma_all, get_q_m, get_threshold, q0_min_level, q0_min_numbers,
                      get_n_m_kde, estimate_q_m_kde, get_q_m_kde, describe, Q_0)
@@ -66,6 +71,29 @@ import matplotlib.pyplot as plt
 # %matplotlib inline
 
 # %% [markdown]
+# ### Configuration
+
+# %%
+with open(os.path.join(config_path, "params.yml"), "r") as ymlfile:
+    cfg_all = yaml.load(ymlfile)
+
+# %%
+load_dotenv(find_dotenv())
+REGION = os.getenv("REGION")
+config = cfg_all[REGION]
+
+# %%
+region_name = config["region_name"]
+radio_catalogue = os.path.join(data_path, "samples", config["radio_catalogue"])
+combined_catalogue = os.path.join(data_path, "samples", config["combined_catalogue"])
+dec_down = config["dec_down"]
+dec_up = config["dec_up"]
+ra_down = config["ra_down"]
+ra_up = config["ra_up"]
+max_major = config["max_major"]
+colour_limits_post = np.array(config["colour_limits_post"])
+
+# %% [markdown]
 # ### General configuration
 
 # %%
@@ -73,21 +101,20 @@ save_intermediate = True
 plot_intermediate = True
 
 # %%
-idp = os.path.join(BASEPATH, "..", "..", "data", "idata", "params")
+idp = os.path.join(data_path, "idata", region_name)
 
 # %%
-if not os.path.isdir(idp):
-    os.makedirs(idp)
+os.makedirs(idp, exist_ok=True)
 
 # %% [markdown]
 # ### Area limits
 
 # %%
-# Test samples LoTSS_DR2_DUMMYCAT_FORPEPE_0h.srl.fits
-dec_down = 22.25
-dec_up = 32.
-ra_down = 0.
-ra_up = 20.5
+# # Test samples LoTSS_DR2_DUMMYCAT_FORPEPE_0h.srl.fits
+# dec_down = 22.25
+# dec_up = 32.
+# ra_down = 0.
+# ra_up = 20.5
 
 # %%
 margin_ra = 0.1
@@ -111,7 +138,7 @@ field_optical = Field(
 # ## Load data
 
 # %%
-combined_all = Table.read(os.path.join(data_path, "samples", "test_combined.fits"))
+combined_all = Table.read(combined_catalogue)
 
 # %% [markdown]
 # We will start to use the updated catalogues that include the output of the LOFAR Galaxy Zoo work.
@@ -120,7 +147,7 @@ combined_all = Table.read(os.path.join(data_path, "samples", "test_combined.fits
 #lofar_all = Table.read("data/LOFAR_HBA_T1_DR1_catalog_v0.9.srl.fits")
 #lofar_all = Table.read(os.path.join(data_path, "samples", "P005p28.fits"))
 #lofar_all = Table.read(os.path.join(data_path, "samples", "LoTSS_DR2_RA0INNER_v0.9.srl.fits"))
-lofar_all = Table.read(os.path.join(data_path, "samples", "LoTSS_DR2_DUMMYCAT_FORPEPE_0h.srl.fits"))
+lofar_all = Table.read(radio_catalogue)
 
 # %%
 np.array(combined_all.colnames)
@@ -135,10 +162,6 @@ describe(lofar_all['Maj'])
 # ### Filter catalogues
 #
 # We will take the sources in the main region but also discard sources with a Major axis size bigger than 15 arsecs.
-
-# %%
-#max_major = 30
-max_major = 15
 
 # %%
 lofar_aux = lofar_all[~np.isnan(lofar_all['Maj'])]
@@ -232,6 +255,7 @@ list(range(10,100,10))
 
 # %%
 np.round(np.percentile(combined["colour"][~np.isnan(combined["colour"])], list(range(10,100,10))), 1)
+# array([-0.5,  0.1,  0.6,  1. ,  1.3,  1.6,  2. ,  2.5,  3.1])
 
 # %%
 #colour_limits = [0.0, 0.5, 1.0, 1.25, 1.5, 1.75, 2.0, 2.25, 2.5, 2.75, 3.0, 3.5, 4.0]
@@ -241,7 +265,7 @@ colour_limits = np.round(np.percentile(combined["colour"][~np.isnan(combined["co
 # Manually defined colour bins a posteriori
 
 # %%
-colour_limits = np.array([0.7, 1.1, 1.5, 1.9, 2.3, 2.7, 3.1, 3.5, 4.1])
+colour_limits = colour_limits_post
 
 # %%
 # Start with the W2-only, W1-only, and "less than lower colour" bins
@@ -324,7 +348,7 @@ len(lofar)
 # ### Summary of galaxy types in the combined catalogue
 
 # %%
-np.sum(combined_legacy) # Matches
+np.sum(combined_legacy) # Matches # 12790855
 
 # %%
 plt.rcParams["figure.figsize"] = (15,5)
@@ -387,7 +411,7 @@ n_iter = 10
 rads = list(range(1,26))
 
 # %%
-Q0_r = 0.6983157523356884
+Q0_r = None # 0.6983157523356884
 
 # %%
 if Q0_r is None:
@@ -747,7 +771,7 @@ plt.ylabel("$Q_0 W1-band$")
 plt.ylim([0, 0.5])
 
 # %%
-Q0_w1 = q_0_rad_w1[4]
+Q0_w1 = q_0_rad_w1[4] #0.41136
 
 # %% [markdown]
 # #### Create the likelihood estimator and run
@@ -821,7 +845,7 @@ lofar["lr_w1"][np.isnan(lofar["lr_w1"])] = 0
 threshold_w1 = np.percentile(lofar[subsample_w1]["lr_w1"], 100*(1 - Q0_w1))
 
 # %%
-threshold_w1 # 0.027 before
+threshold_w1 # 0.026 before
 
 # %%
 plt.rcParams["figure.figsize"] = (15,6)
@@ -901,7 +925,7 @@ plt.ylabel("$Q_0 W2-band$")
 plt.ylim([0, 0.1])
 
 # %%
-Q0_w2 = q_0_rad_w2[4]
+Q0_w2 = q_0_rad_w2[4] # 0.03364
 
 # %% [markdown]
 # #### Create the likelihood estimator and run
