@@ -46,7 +46,8 @@ except NameError as e:
         BASEPATH = os.path.realpath(".")
         ROOTPATH = BASEPATH
     else:
-        raise e
+        BASEPATH = os.getcwd()
+        ROOTPATH = os.path.join(BASEPATH, "..", "..")
 
 data_path = os.path.join(ROOTPATH, "data")
 src_path = os.path.join(ROOTPATH, "src")
