@@ -67,6 +67,7 @@ data/raw/*.sha256sum
 data/raw/md5sums.txt
 data/im_cache/legacysurvey*
 data/catalogue_cache/*.fits
+data/idata
 
 # Assorted
 notes.txt
