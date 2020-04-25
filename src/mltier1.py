@@ -436,12 +436,12 @@ def estimate_q_m_kde(
 
 def fr(r, sigma):
     """Get the probability related to the spatial distribution"""
-    return 0.5 / np.pi / det(sigma) * np.exp(-0.5 * r ** 2 / sigma[0, 0])
+    return 0.5 / np.pi / np.sqrt(det(sigma)) * np.exp(-0.5 * r ** 2 / sigma[0, 0])
 
 
 def fr_u(r, sigma_0_0, det_sigma):
     """Get the probability related to the spatial distribution"""
-    return 0.5 / np.pi / det_sigma * np.exp(-0.5 * r ** 2 / sigma_0_0)
+    return 0.5 / np.pi / np.sqrt(det_sigma) * np.exp(-0.5 * r ** 2 / sigma_0_0)
 
 
 def fr_u_old(r, sigma, sigma_maj, sigma_min):
