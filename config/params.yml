@@ -3,40 +3,40 @@ n13a:
     region_name: "params_n13a"
     radio_catalogue: "LoTSS_DR2_v100.srl_n13h.fits"
     combined_catalogue: "combined-north-13h.fits"
-    dec_down: 52.
-    dec_up: 62.
-    ra_down: 230.
-    ra_up: 250.
+    dec_down: 58.
+    dec_up: 68.
+    ra_down: 125.
+    ra_up: 145.
     max_major: 15
     colour_limits_post: [0.7, 1.1, 1.5, 1.9, 2.3, 2.7, 3.1, 3.5, 4.1]
 n13b:
     region_name: "params_n13b"
     radio_catalogue: "LoTSS_DR2_v100.srl_n13h.fits"
     combined_catalogue: "combined-north-13h.fits"
-    dec_down: 52.
-    dec_up: 62.
-    ra_down: 230.
-    ra_up: 250.
+    dec_down: 35.
+    dec_up: 45.
+    ra_down: 245.
+    ra_up: 265.
     max_major: 15
     colour_limits_post: [0.7, 1.1, 1.5, 1.9, 2.3, 2.7, 3.1, 3.5, 4.1]
 n13c:
     region_name: "params_n13c"
     radio_catalogue: "LoTSS_DR2_v100.srl_n13h.fits"
     combined_catalogue: "combined-north-13h.fits"
-    dec_down: 52.
-    dec_up: 62.
-    ra_down: 230.
-    ra_up: 250.
+    dec_down: 46.8
+    dec_up: 55.9
+    ra_down: 170.
+    ra_up: 190.
     max_major: 15
     colour_limits_post: [0.7, 1.1, 1.5, 1.9, 2.3, 2.7, 3.1, 3.5, 4.1]
 n13d:
     region_name: "params_n13d"
     radio_catalogue: "LoTSS_DR2_v100.srl_n13h.fits"
     combined_catalogue: "combined-north-13h.fits"
-    dec_down: 52.
-    dec_up: 62.
-    ra_down: 230.
-    ra_up: 250.
+    dec_down: 33.
+    dec_up: 43.
+    ra_down: 125.
+    ra_up: 145.
     max_major: 15
     colour_limits_post: [0.7, 1.1, 1.5, 1.9, 2.3, 2.7, 3.1, 3.5, 4.1]
 n13e:
@@ -53,20 +53,20 @@ s13a:
     region_name: "params_s13a"
     radio_catalogue: "LoTSS_DR2_v100.srl_s13h.fits"
     combined_catalogue: "combined-south-13h.fits"
-    dec_down: 52.
-    dec_up: 62.
-    ra_down: 230.
-    ra_up: 250.
+    dec_down: 24.
+    dec_up: 32.
+    ra_down: 192.
+    ra_up: 208.5
     max_major: 15
     colour_limits_post: [0.7, 1.1, 1.5, 1.9, 2.3, 2.7, 3.1, 3.5, 4.1]
 s13b:
     region_name: "params_s13b"
     radio_catalogue: "LoTSS_DR2_v100.srl_s13h.fits"
     combined_catalogue: "combined-south-13h.fits"
-    dec_down: 52.
-    dec_up: 62.
-    ra_down: 230.
-    ra_up: 250.
+    dec_down: 26.
+    dec_up: 32.3
+    ra_down: 121.8
+    ra_up: 130.6
     max_major: 15
     colour_limits_post: [0.7, 1.1, 1.5, 1.9, 2.3, 2.7, 3.1, 3.5, 4.1]
 s0a:
