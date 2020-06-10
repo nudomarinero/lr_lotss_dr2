@@ -8,6 +8,7 @@ import numpy as np
 from astropy.coordinates import SkyCoord, search_around_sky
 from astropy.table import Table, join
 from astropy import units as u
+from dotenv import load_dotenv, find_dotenv
 
 try:
     BASEPATH = os.path.dirname(os.path.realpath(__file__))
@@ -23,12 +24,23 @@ except NameError:
 sys.path.append(os.path.join(BASEPATH, '..', '..', 'src'))
 from mltier1 import MultiMLEstimator, parallel_process, get_sigma_all
 
+# LOAD CONFIG from ENV file
+# Save as .env
+#LEGACY_DATA_PATH=/disk02/jsm/Legacy_data-south-13h/Legacy
+#UNWISE_DATA_PATH=/disk02/jsm/Legacy_data-south-13h/unWISE
+#REGION=s13a
+load_dotenv(find_dotenv())
+COMBINED_DATA_PATH = os.getenv("COMBINED_DATA_PATH")
+PARAMS_PATH = os.getenv("PARAMS_PATH")
+THRESHOLD = os.getenv("THRESHOLD")
+RADIO_CATALOGUE = os.getenv("RADIO_CATALOGUE")
+OUTPUT_RADIO_CATALOGUE = os.getenv("OUTPUT_RADIO_CATALOGUE")
+
 # Default config parameters
-base_optical_catalogue = os.path.join(data_path, "samples", "test_combined.fits")
-params = pickle.load(
-    open(os.path.join(BASEPATH, "lofar_params.pckl"), "rb"))
+base_optical_catalogue = COMBINED_DATA_PATH
+params = pickle.load(open(PARAMS_PATH, "rb"))
 colour_limits = np.array([0.7, 1.2, 1.5, 2. , 2.4, 2.8, 3.1, 3.6, 4.1])
-threshold = 0.404
+threshold = THRESHOLD
 max_major = 15
 radius = 15
 
@@ -36,10 +48,8 @@ radius = 15
 #     os.path.join(data_path, "samples", "LoTSS_DR2_rolling.gaus_0h.fits"))
 # output_catalogue = os.path.join(
 #     os.path.join(data_path, "samples", "LoTSS_DR2_rolling.gaus_0h.lr.fits"))
-input_catalogue = os.path.join(
-    os.path.join(data_path, "samples", "LoTSS_DR2_rolling.srl_0h.fits"))
-output_catalogue = os.path.join(
-    os.path.join(data_path, "samples", "LoTSS_DR2_rolling.srl_0h.lr.fits"))
+input_catalogue = RADIO_CATALOGUE
+output_catalogue = OUTPUT_RADIO_CATALOGUE
 
 # %% 
 bin_list, centers, Q_0_colour, n_m, q_m = params
