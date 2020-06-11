@@ -189,7 +189,7 @@ print("Save output")
 pwl["RA_2"].name = "ra"
 pwl["DEC_2"].name = "dec"
 pwl["RA_1"].name = "RA"
-pwl["DEC_2"].name = "DEC"
+pwl["DEC_1"].name = "DEC"
 pwl.filled().write(output_catalogue, format="fits")
 
     
