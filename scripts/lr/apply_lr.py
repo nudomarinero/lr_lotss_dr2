@@ -40,7 +40,7 @@ OUTPUT_RADIO_CATALOGUE = os.getenv("OUTPUT_RADIO_CATALOGUE")
 base_optical_catalogue = COMBINED_DATA_PATH
 params = pickle.load(open(PARAMS_PATH, "rb"))
 colour_limits = np.array([0.7, 1.2, 1.5, 2. , 2.4, 2.8, 3.1, 3.6, 4.1])
-threshold = THRESHOLD
+threshold = float(THRESHOLD)
 max_major = 15
 radius = 15
 
