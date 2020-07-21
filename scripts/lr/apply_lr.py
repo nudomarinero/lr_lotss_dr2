@@ -60,12 +60,6 @@ combined = Table.read(base_optical_catalogue)
 print("Load input catalogue")
 lofar_all = Table.read(input_catalogue)
 
-## Filter the input catalogue
-lofar = lofar_all[
-    ~np.isnan(lofar_all['Maj']) & 
-    (lofar_all['Maj'] < max_major)
-    ]
-
 ## Get the coordinates
 coords_combined = SkyCoord(combined['RA'], 
                         combined['DEC'], 
